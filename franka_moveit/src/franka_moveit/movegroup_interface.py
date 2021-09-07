@@ -201,7 +201,7 @@ class PandaMoveGroupInterface:
             :type wait: bool
         """
         self._arm_group.set_pose_target(pose, end_effector_link=ee_link)
-        self._arm_group.go(wait=wait)
+        return self._arm_group.go(wait=wait)
 
 
     def plan_cartesian_path(self, poses):

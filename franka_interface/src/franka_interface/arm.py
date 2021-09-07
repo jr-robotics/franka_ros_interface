@@ -841,7 +841,7 @@ class ArmInterface(object):
             self._ctrl_manager.joint_trajectory_controller)
 
         ## == Plan avoids defined scene obstacles ==
-        self._movegroup_interface.go_to_cartesian_pose(
+        result = self._movegroup_interface.go_to_cartesian_pose(
             create_pose_msg(*self.get_flange_pose(pos, ori)))
 
         ## =========================================
@@ -857,6 +857,8 @@ class ArmInterface(object):
         self._ctrl_manager.set_motion_controller(curr_controller)
         rospy.loginfo("{}: Trajectory controlling complete".format(
             self.__class__.__name__))
+        
+        return result
 
     def pause_controllers_and_do(self, func, *args, **kwargs):
         """
