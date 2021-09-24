@@ -106,6 +106,9 @@ class PandaMoveGroupInterface:
 
         self._arm_group.set_max_velocity_scaling_factor(0.3)
 
+        self._arm_group.set_goal_position_tolerance(0.01)
+        self._arm_group.set_goal_orientation_tolerance(0.01)
+
 
     @property
     def robot_state_interface(self):
@@ -201,7 +204,10 @@ class PandaMoveGroupInterface:
             :type wait: bool
         """
         self._arm_group.set_pose_target(pose, end_effector_link=ee_link)
-        return self._arm_group.go(wait=wait)
+        plan = self._arm_group.go(wait=wait)
+        self._arm_group.stop()
+        self._arm_group.clear_pose_targets()
+        return plan
 
 
     def plan_cartesian_path(self, poses):
