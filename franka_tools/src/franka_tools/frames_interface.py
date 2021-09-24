@@ -268,6 +268,35 @@ class FrankaFramesInterface(object):
 
         return self.set_K_frame(frame=DEFAULT_TRANSFORMATIONS.K_FRAME)
 
+    def get_tf(self, frame_name, timeout=5.0, parent='world'):
+        """
+        Get stamped transfrom of a frame with respect to another.
+        :return: transform stamped
+        :rtype: geometry_msgs.msg.TransformStamped
+        :param frame_name: Name of the child frame from the TF tree
+        :type frame_name: str
+        :param parent: Name of parent frame (default: 'world')
+        :type parent: str
+        """
+        tfBuffer = tf.Buffer()
+        listener = tf.TransformListener(tfBuffer)
+        err = "FrankaFramesInterface: Error while looking up transform from Flange frame to link frame %s" % frame_name
+
+        def body():
+            try:
+                tfBuffer.lookup_transform(parent, frame_name, rospy.Time(0))
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                return False
+            return True
+
+        franka_dataflow.wait_for(
+            lambda: body(), timeout=timeout, raise_on_error=True, timeout_msg=err)
+
+        trans_stamped = tfBuffer.lookup_transform(
+            parent, frame_name, rospy.Time(0))
+
+        return trans_stamped
+
     def K_frame_is_reset(self):
         assert self._current_K_frame_transformation is not None, "FrankaFramesInterface: Current K Frame is not known."
         return list(self._current_K_frame_transformation) == list(DEFAULT_TRANSFORMATIONS.K_FRAME)
