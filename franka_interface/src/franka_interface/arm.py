@@ -52,7 +52,7 @@ from .robot_params import RobotParams
 from franka_moveit import PandaMoveGroupInterface
 from franka_moveit.utils import create_pose_msg
 from franka_tools import FrankaFramesInterface, FrankaControllerManagerInterface, JointTrajectoryActionClient, CollisionBehaviourInterface
-
+from scipy.spatial.transform import Rotation as R
 
 class TipState():
 
@@ -852,6 +852,38 @@ class ArmInterface(object):
         # self._movegroup_interface.execute_plan(plan)
 
         ## ====================================
+
+        rospy.sleep(0.5)
+        self._ctrl_manager.set_motion_controller(curr_controller)
+        rospy.loginfo("{}: Trajectory controlling complete".format(
+            self.__class__.__name__))
+        
+        return result
+
+    def move_to_cartesian_frame(self, frame, use_moveit=True):
+        """
+        Move robot end-effector to specified tf frame using MoveIt! (also avoids obstacles if they are defined using :py:class:`franka_moveit.ExtendedPlanningSceneInterface`)
+
+        :param frame: target end-effector tf frame
+        :type frame: [string]
+        :param use_moveit: Flag for using MoveIt (redundant for now; only works if set to True), defaults to True
+        :type use_moveit: bool, optional
+        """
+        if not use_moveit or self._movegroup_interface is None:
+            rospy.logerr("{}: MoveGroupInterface was not found! Aborting cartesian planning.".format(
+                self.__class__.__name__))
+            return
+
+        curr_controller = self._ctrl_manager.set_motion_controller(
+            self._ctrl_manager.joint_trajectory_controller)
+
+        t = self._frames_interface.get_tf(frame)
+        
+        pos = [t.transform.translation.x, t.transform.translation.y, t.transform.translation.z]
+        ori = np.quaternion(t.transform.rotation.w, t.transform.rotation.x, t.transform.rotation.y, t.transform.rotation.z)
+
+        result = self._movegroup_interface.go_to_cartesian_pose(
+            create_pose_msg(*self.get_flange_pose(pos, ori)))
 
         rospy.sleep(0.5)
         self._ctrl_manager.set_motion_controller(curr_controller)
