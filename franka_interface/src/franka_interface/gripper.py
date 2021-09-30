@@ -321,7 +321,7 @@ class GripperInterface(object):
             if not result.success:
                 self.stop_action()
         self._caller = "close gripper"
-        return self.grasp(0.0, 0.1, cb = cb)
+        return self.grasp(width=0.0, force=60, speed=0.1, epsilon_inner=0.1, epsilon_outer=0.1, cb = cb)
 
     def calibrate(self):
         return self.home_joints(wait_for_result = True)
