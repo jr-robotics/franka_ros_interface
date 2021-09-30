@@ -859,6 +859,47 @@ class ArmInterface(object):
             self.__class__.__name__))
         
         return result
+    
+    def move_to_cartesian_pose_stamped(self, pose_stamped, use_moveit=True):
+        """
+        Move robot end-effector to specified cartesian pose using MoveIt! (also avoids obstacles if they are defined using :py:class:`franka_moveit.ExtendedPlanningSceneInterface`)
+
+        :param pos: Pose message for the given end-effector position and orientation
+        :type pos: geometry_msgs.msg.PoseStamped
+        :param use_moveit: Flag for using MoveIt (redundant for now; only works if set to True), defaults to True
+        :type use_moveit: bool, optional
+        """
+        if not use_moveit or self._movegroup_interface is None:
+            rospy.logerr("{}: MoveGroupInterface was not found! Aborting cartesian planning.".format(
+                self.__class__.__name__))
+            return
+
+        pos = np.array([pose_stamped.pose.position.x, pose_stamped.pose.position.y, pose_stamped.pose.position.z])
+        ori = quaternion.quaternion(pose_stamped.pose.orientation.w, pose_stamped.pose.orientation.x, pose_stamped.pose.orientation.y, pose_stamped.pose.orientation.z)
+
+        self.get_flange_pose(pos, ori)
+        curr_controller = self._ctrl_manager.set_motion_controller(
+            self._ctrl_manager.joint_trajectory_controller)
+
+        ## == Plan avoids defined scene obstacles ==
+        result = self._movegroup_interface.go_to_cartesian_pose(
+            create_pose_msg(*self.get_flange_pose(pos, ori)))
+
+        ## =========================================
+
+        ## == does not avoid scene obstacles ==
+        # plan, _ = self._movegroup_interface.plan_cartesian_path(
+        #     [create_pose_msg(pos, ori)])
+        # self._movegroup_interface.execute_plan(plan)
+
+        ## ====================================
+
+        rospy.sleep(0.5)
+        self._ctrl_manager.set_motion_controller(curr_controller)
+        rospy.loginfo("{}: Trajectory controlling complete".format(
+            self.__class__.__name__))
+        
+        return result
 
     def move_to_cartesian_frame(self, frame, use_moveit=True):
         """
