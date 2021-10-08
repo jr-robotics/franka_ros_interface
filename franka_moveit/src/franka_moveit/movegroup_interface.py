@@ -190,7 +190,7 @@ class PandaMoveGroupInterface:
 
         return True
 
-    def go_to_cartesian_pose(self, pose, ee_link="", wait=True):
+    def go_to_cartesian_pose(self, pose, ee_link="", wait=True, velocity=1.0):
         """
             Plan and execute a cartesian path to reach a target by avoiding obstacles in the scene.
             For planning through multiple points, use func:`self._arm_group.set_pose_targets`.
@@ -202,7 +202,10 @@ class PandaMoveGroupInterface:
             :type ee_link: str, optional
             :param wait: if set to True, blocks till execution is complete; defaults to True
             :type wait: bool
+            :param velocity: Velocity (fraction of max) [0.0, 1.0], defaults to 1.0
+            :type velocity: float
         """
+        self._arm_group.set_max_velocity_scaling_factor(velocity)
         self._arm_group.set_pose_target(pose, end_effector_link=ee_link)
         plan = self._arm_group.go(wait=wait)
         self._arm_group.stop()

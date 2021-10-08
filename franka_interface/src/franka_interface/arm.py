@@ -818,7 +818,7 @@ class ArmInterface(object):
 
         return new_pos, quaternion.from_rotation_matrix(new_ori)
 
-    def move_to_cartesian_pose(self, pos, ori=None, use_moveit=True):
+    def move_to_cartesian_pose(self, pos, ori=None, use_moveit=True, velocity=1.0):
         """
         Move robot end-effector to specified cartesian pose using MoveIt! (also avoids obstacles if they are defined using :py:class:`franka_moveit.ExtendedPlanningSceneInterface`)
 
@@ -828,6 +828,8 @@ class ArmInterface(object):
         :type ori: quaternion.quaternion or [float] (quaternion in w,x,y,z order), optional
         :param use_moveit: Flag for using MoveIt (redundant for now; only works if set to True), defaults to True
         :type use_moveit: bool, optional
+        :param velocity: Velocity (fraction of max) [0.0, 1.0], defaults to 1.0
+        :type velocity: float
         """
         if not use_moveit or self._movegroup_interface is None:
             rospy.logerr("{}: MoveGroupInterface was not found! Aborting cartesian planning.".format(
@@ -842,7 +844,7 @@ class ArmInterface(object):
 
         ## == Plan avoids defined scene obstacles ==
         result = self._movegroup_interface.go_to_cartesian_pose(
-            create_pose_msg(*self.get_flange_pose(pos, ori)))
+            create_pose_msg(*self.get_flange_pose(pos, ori)), velocity=velocity)
 
         ## =========================================
 
@@ -860,7 +862,7 @@ class ArmInterface(object):
         
         return result
     
-    def move_to_cartesian_pose_stamped(self, pose_stamped, use_moveit=True):
+    def move_to_cartesian_pose_stamped(self, pose_stamped, use_moveit=True, velocity=1.0):
         """
         Move robot end-effector to specified cartesian pose using MoveIt! (also avoids obstacles if they are defined using :py:class:`franka_moveit.ExtendedPlanningSceneInterface`)
 
@@ -868,6 +870,8 @@ class ArmInterface(object):
         :type pos: geometry_msgs.msg.PoseStamped
         :param use_moveit: Flag for using MoveIt (redundant for now; only works if set to True), defaults to True
         :type use_moveit: bool, optional
+        :param velocity: Velocity (fraction of max) [0.0, 1.0], defaults to 1.0
+        :type velocity: float
         """
         if not use_moveit or self._movegroup_interface is None:
             rospy.logerr("{}: MoveGroupInterface was not found! Aborting cartesian planning.".format(
@@ -883,7 +887,7 @@ class ArmInterface(object):
 
         ## == Plan avoids defined scene obstacles ==
         result = self._movegroup_interface.go_to_cartesian_pose(
-            create_pose_msg(*self.get_flange_pose(pos, ori)))
+            create_pose_msg(*self.get_flange_pose(pos, ori)), velocity=velocity)
 
         ## =========================================
 
@@ -901,7 +905,7 @@ class ArmInterface(object):
         
         return result
 
-    def move_to_cartesian_frame(self, frame, use_moveit=True):
+    def move_to_cartesian_frame(self, frame, use_moveit=True, velocity=1.0):
         """
         Move robot end-effector to specified tf frame using MoveIt! (also avoids obstacles if they are defined using :py:class:`franka_moveit.ExtendedPlanningSceneInterface`)
 
@@ -909,6 +913,8 @@ class ArmInterface(object):
         :type frame: [string]
         :param use_moveit: Flag for using MoveIt (redundant for now; only works if set to True), defaults to True
         :type use_moveit: bool, optional
+        :param velocity: Velocity (fraction of max) [0.0, 1.0], defaults to 1.0
+        :type velocity: float
         """
         if not use_moveit or self._movegroup_interface is None:
             rospy.logerr("{}: MoveGroupInterface was not found! Aborting cartesian planning.".format(
@@ -924,7 +930,7 @@ class ArmInterface(object):
         ori = np.quaternion(t.transform.rotation.w, t.transform.rotation.x, t.transform.rotation.y, t.transform.rotation.z)
 
         result = self._movegroup_interface.go_to_cartesian_pose(
-            create_pose_msg(*self.get_flange_pose(pos, ori)))
+            create_pose_msg(*self.get_flange_pose(pos, ori)), velocity=velocity)
 
         rospy.sleep(0.5)
         self._ctrl_manager.set_motion_controller(curr_controller)
