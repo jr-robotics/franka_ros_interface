@@ -1,6 +1,7 @@
 
 import geometry_msgs.msg
 import quaternion
+import numpy as np
 
 def create_pose_msg(position, orientation):
     """
@@ -53,3 +54,18 @@ def create_pose_stamped_msg(position, orientation, frame = "world"):
 
     return pose
     
+def pose_stamped_to_pos_ori(pose_stamped):
+    """
+    Convert PoseStamped message to pos ori
+    :param pose_stamped: Pose message for the given end-effector position and orientation
+    :type pose_stamped: geometry_msgs.msg.PoseStamped
+
+    :return: corresponding pose
+    :rtype: np.ndarray, quaternion.quaternion
+    
+    """
+
+    pos = np.array([pose_stamped.pose.position.x, pose_stamped.pose.position.y, pose_stamped.pose.position.z])
+    ori = quaternion.quaternion(pose_stamped.pose.orientation.w, pose_stamped.pose.orientation.x, pose_stamped.pose.orientation.y, pose_stamped.pose.orientation.z)
+
+    return pos, ori
