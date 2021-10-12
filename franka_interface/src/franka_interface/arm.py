@@ -834,7 +834,7 @@ class ArmInterface(object):
         if not use_moveit or self._movegroup_interface is None:
             rospy.logerr("{}: MoveGroupInterface was not found! Aborting cartesian planning.".format(
                 self.__class__.__name__))
-            return
+            return False
 
         if ori is None:
             ori = self._cartesian_pose['orientation']
@@ -857,8 +857,8 @@ class ArmInterface(object):
 
         rospy.sleep(0.5)
         self._ctrl_manager.set_motion_controller(curr_controller)
-        rospy.loginfo("{}: Trajectory controlling complete".format(
-            self.__class__.__name__))
+        # rospy.loginfo("{}: Trajectory controlling complete".format(
+        #     self.__class__.__name__))
         
         return result
 
