@@ -213,13 +213,17 @@ class PandaMoveGroupInterface:
         return plan
 
 
-    def plan_cartesian_path(self, poses):
+    def plan_cartesian_path(self, poses, eef_steps=0.01, jump_threshold=0.0):
         """
             Plan cartesian path using the provided list of poses.
 
             :param poses: The cartesian poses to be achieved in sequence. 
                 (Use :func:`franka_moveit.utils.create_pose_msg` for creating pose messages easily)
             :type poses: [geomentry_msgs.msg.Pose]
+            :param eef_steps: Configurations are computed for every eef_step meters.
+            :type eef_steps: float
+            :param jump_threshold: The jump_threshold specifies the maximum distance in configuration space between consecutive points in the resultingpath.
+            :type jump_threshold: float
 
             :return: the actual RobotTrajectory (can be used for :py:meth:`execute_plan`), a fraction of how much of the path was followed
             :rtype: [RobotTrajectory, float (0,1)]
@@ -230,7 +234,7 @@ class PandaMoveGroupInterface:
         for pose in poses:
             waypoints.append(copy.deepcopy(pose))
 
-        plan, fraction = self._arm_group.compute_cartesian_path(waypoints, 0.01, 0.0)
+        plan, fraction = self._arm_group.compute_cartesian_path(waypoints, eef_steps, jump_threshold)
 
         return plan, fraction
 
