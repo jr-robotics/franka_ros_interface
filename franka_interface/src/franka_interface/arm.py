@@ -725,7 +725,7 @@ class ArmInterface(object):
             self._ctrl_manager.joint_trajectory_controller)
 
         if use_moveit and self._movegroup_interface:
-            self._movegroup_interface.go_to_joint_positions(
+            return self._movegroup_interface.go_to_joint_positions(
                 [positions[n] for n in self._joint_names], tolerance=threshold)
 
         else:
